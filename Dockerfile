@@ -1,6 +1,6 @@
 # What you need to build image and use it with this Dockerfile
 # recuirments realsense D435 or D435i depth camera
-# ###installation
+# ### installation
 # install realsense drivers
 # sudo chmod 776 nvidia-container-runtime-script.sh
 # sudo ./nvidia-container-runtime-script.sh 
@@ -38,7 +38,7 @@ RUN python3 -m virtualenv --python=/usr/bin/python3.6 /opt/venv
 # git demo
 RUN git clone https://github.com/alourositi/EAM_docker.git \
  && cd EAM_docker/demo \
- && wget https://www.dropbox.com/s/n97xv8sqrseg2oi/e2e_faster_rcnn_X_101_32x8d_FPN_1x.pth
+ && wget --progress=bar:force:noscroll https://www.dropbox.com/s/n97xv8sqrseg2oi/e2e_faster_rcnn_X_101_32x8d_FPN_1x.pth
 
 WORKDIR EAM_docker
 
@@ -66,5 +66,6 @@ RUN rm -rf /var/lib/apt/lists/*
 ENV IP_KAFKA=195.251.117.126
 ENV PORT_KAFKA=9091
 
-WORKDIR demo
-CMD ["python3","object_detections_EAM.py"]
+RUN echo "test"
+#WORKDIR demo
+#CMD ["python3","object_detections_EAM.py"]
