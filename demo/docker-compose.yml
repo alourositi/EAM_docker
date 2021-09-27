@@ -1,0 +1,22 @@
+version: "3"
+services:
+  eam:
+    build: .
+    ports:
+      - "3939:3939"
+    image: "docker_eam:latest"
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    devices:
+      - "/dev/video0:/dev/video0"
+      - "/dev/video1:/dev/video1"
+      - "/dev/video2:/dev/video2"
+      - "/dev/video3:/dev/video3"
+      - "/dev/video4:/dev/video4"
+      - "/dev/video5:/dev/video5"
+    command: bash -c "
+      cd demo
+      && python3 object_detections_EAM.py
+      "
