@@ -141,6 +141,7 @@ if __name__ == "__main__":
     align_to = rs.stream.color
     align = rs.align(align_to)
 
+    print("Running detection for objects...")
     unique_ids=[]
     try:
         while True:
@@ -186,6 +187,7 @@ if __name__ == "__main__":
                         # Send new detections over Kafka
                         kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(t))
                         kafka_thread.start()
+                        print("Sent detection message to kafka.")
                         unique_ids.append(t.det_id)
 
     except RuntimeError as err:
