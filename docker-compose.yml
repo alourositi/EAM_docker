@@ -18,5 +18,5 @@ services:
       - "/dev/video5:/dev/video5"
     command: bash -c "
       cd demo
-      && python3 object_detections_EAM.py
+      && python3 -u object_detections_EAM.py
       "
