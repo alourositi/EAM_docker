@@ -63,9 +63,8 @@ RUN python3 setup.py build develop
 
 RUN rm -rf /var/lib/apt/lists/*
 
-ENV IP_KAFKA=195.251.117.126
-ENV PORT_KAFKA=9091
+#ENV IP_KAFKA=195.251.117.126
+#ENV PORT_KAFKA=9091
 
-RUN echo "test"
 #WORKDIR demo
 #CMD ["python3","object_detections_EAM.py"]
