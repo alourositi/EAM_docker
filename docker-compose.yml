@@ -4,6 +4,7 @@ services:
     build: .
     ports:
       - "3939:3939"
+      - "4567:4567"
     image: "docker_eam:latest"
     runtime: nvidia
     environment:

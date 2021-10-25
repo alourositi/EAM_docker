@@ -200,9 +200,9 @@ def main():
     det_q = mp.Queue()
 
     detector_process = mp.Process(target=run_detections, args=(frame_q, det_q))
-    display_process=mp.Process(target=display_frame, args=(det_q,))
+    #display_process=mp.Process(target=display_frame, args=(det_q,))
     detector_process.start()
-    display_process.start()
+    #display_process.start()
 
     # Listen for connections
 
@@ -216,7 +216,7 @@ def main():
     except KeyboardInterrupt: 
         client_process.join()
         detector_process.join()
-        display_process.join()
+        #display_process.join()
         cv2.destroyAllWindows()
 
 if __name__=="__main__":
