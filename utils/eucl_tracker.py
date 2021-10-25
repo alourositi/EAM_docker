@@ -1,5 +1,5 @@
 import math
-from object_detections_EAM import *
+from utils.objects import *
 
 class EuclideanDistTracker:
     def __init__(self):
@@ -25,6 +25,7 @@ class EuclideanDistTracker:
             x1, y1, x2, y2 = d.bbox[0],d.bbox[1], d.bbox[2], d.bbox[3] 
             cx = int(round((x1+x2)/2))
             cy = int(round((y1+y2)/2))
+            diam=math.sqrt((x1-x2)**2+(y1-y2)**2)
             # cx = (int(round(x)) + int(round(x)) + int(round(w))) // 2
             #cy = (int(round(y)) + int(round(y)) + int(round(h))) // 2
             #print('ggggggggggggggggggggggggggggggggg')
@@ -38,7 +39,8 @@ class EuclideanDistTracker:
                 #print("yyyyyyyyyyyyyyyyyyyyy")
 
                 #if dist < 25:
-                if dist < 40:
+                #if dist < 40:
+                if dist < 0.25*diam:
                     self.center_points[id] = (cx, cy)
                     #print(self.center_points)
                     #objects_bbs_ids.append([x, y, w, h, id])
@@ -67,6 +69,6 @@ class EuclideanDistTracker:
         
         
         for i in range(len(detection_ids)):
-            detections[i].set_id(detection_ids[i])
+            detections[i].update_id(detection_ids[i])
 
         return detections

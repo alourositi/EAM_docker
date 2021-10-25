@@ -9,6 +9,7 @@ from maskrcnn_benchmark.structures.image_list import to_image_list
 from maskrcnn_benchmark.modeling.roi_heads.mask_head.inference import Masker
 from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
+from modules.detector.maskrcnn_benchmark.config import cfg
 
 
 class COCODemo(object):
@@ -100,9 +101,12 @@ class COCODemo(object):
         "drone",
     ]
 
+    config_file = "modules/detector/e2e_faster_rcnn_X_101_32x8d_FPN_1x_custom.yaml"
+    cfg.merge_from_file(config_file)
+
     def __init__(
         self,
-        cfg,
+        cfg=cfg,
         confidence_threshold=0.7,
         show_mask_heatmaps=False,
         masks_per_dim=2,

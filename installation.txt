@@ -6,15 +6,12 @@ The list of prerequisites for running NVIDIA Container Toolkit is described belo
 3. NVIDIA GPU with Architecture >= Kepler (or compute capability 3.0)
 4. NVIDIA Linux drivers >= 418.81.07 (Note that older driver releases or branches are unsupported.)
 
-installation
-1. On host you must install first realsense camera drivers, only librealsense2-utils
-https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
-
-2. On host you must install nvidia-docker2
+INSTALLATION
+1. On host you must install nvidia-docker2
 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
-3. On host you must remove first docker-compose.
+2. On host you must remove first docker-compose.
 
-4. On host you must upgrade docker-compose version to version>= 1.28.5
+3. On host you must upgrade docker-compose version to version>= 1.28.5
 https://docs.docker.com/compose/install/
 
