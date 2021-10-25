@@ -64,6 +64,6 @@ RUN rm -rf /var/lib/apt/lists/*
 
 #ENV IP_KAFKA=195.251.117.126
 #ENV PORT_KAFKA=9091
-
+WORKDIR EAM_docker
 #WORKDIR demo
 #CMD ["python3","object_detections_EAM.py"]

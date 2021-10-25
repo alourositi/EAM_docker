@@ -4,7 +4,7 @@ import struct
 import threading
 import json 
 import time
-import netifaces as ni
+#import netifaces as ni
 import numpy as np
 import os
 
