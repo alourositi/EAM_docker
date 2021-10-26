@@ -195,6 +195,7 @@ def main():
 
     try:
         ServerSocket.bind((host, port))
+        print("Listening for connections")
     except socket.error as e:
         print(str(e))
 
