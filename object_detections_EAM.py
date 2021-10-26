@@ -66,6 +66,7 @@ def handle_client(Client, address,q):
 
         # Push to queue
         q.put(current_frame)
+        print("Frame pushed to queue")
 
 def run_detections(frame_q,det_q):
 
@@ -132,20 +133,23 @@ def run_detections(frame_q,det_q):
                         unique_dets.append(det)
 
                 det_q.put([frame.image,frame.depth,frame.CameraId])
-                #print("Pushed detection to queue")
+                print("Detection pushed to queue")
 
         if (time.time() - start_time) > 9:
+            print("10 seconds passed")
             
             if unique_dets!=[]:
                 # Send new detections over Kafka
                 if last_uniq_object_id==0:
                     kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets,producer))
                     kafka_thread.start()
+                    print("Sent detections to Kafka(1st)")
                     last_uniq_object_id= counter_uniq_object_id
                 else:
                     if unique_dets[last_uniq_object_id:]!=[]:
                         kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets[last_uniq_object_id:],producer))
                         kafka_thread.start()
+                        print("Sent detections to Kafka")
                         last_uniq_object_id= counter_uniq_object_id
             
             #unique_dets = [] #Set list of detection object as empty eath time send object to kafka
