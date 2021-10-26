@@ -192,6 +192,9 @@ def main():
     #port = 4567
     host= '0.0.0.0' #Get IP of EAM from .env file 
     port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
+    
+    print(host)
+    print(port)
 
     try:
         ServerSocket.bind((host, port))
