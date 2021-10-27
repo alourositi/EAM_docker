@@ -143,13 +143,13 @@ def run_detections(frame_q,det_q):
                 if last_uniq_object_id==0:
                     kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets,producer))
                     kafka_thread.start()
-                    print("Sent detections to Kafka(1st)")
+                    #print("Sent detections to Kafka(1st)")
                     last_uniq_object_id= counter_uniq_object_id
                 else:
                     if unique_dets[last_uniq_object_id:]!=[]:
                         kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets[last_uniq_object_id:],producer))
                         kafka_thread.start()
-                        print("Sent detections to Kafka")
+                        #print("Sent detections to Kafka")
                         last_uniq_object_id= counter_uniq_object_id
             
             #unique_dets = [] #Set list of detection object as empty eath time send object to kafka
@@ -193,8 +193,8 @@ def main():
     host= '0.0.0.0' #Get IP of EAM from .env file 
     port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
     
-    print(host)
-    print(port)
+    #print(host)
+    #print(port)
 
     try:
         ServerSocket.bind((host, port))
