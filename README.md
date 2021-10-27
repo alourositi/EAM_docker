@@ -1,9 +1,9 @@
 This project is based on the maskrcnn-benchmark project {https://github.com/facebookresearch/maskrcnn-benchmark} for the object detection part.
 
-## Requirments
-Realsense D435 or D435i Depth camera send RGB and Depth to EAM \ 
+## Requirements
 Nvidia GPU.\
 Kafka message broker.\
+Test with Realsense Depth camera to send RGB and Depth to EAM 
 
 ## Citations
 Please consider citing maskrcnn-benchmark project in your publications if it helps your research. The following is a BibTeX reference. The BibTeX entry requires the `url` LaTeX package.
