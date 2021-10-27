@@ -190,7 +190,7 @@ def main():
     ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     #host= ni.ifaddresses('eno1')[ni.AF_INET][0]['addr'] # Return the IP of server
     #port = 4567
-    host= '0.0.0.0' #Get IP of EAM from .env file 
+    host= os.environ['IP_REC_FROM'] #Get IP of EAM from .env file 
     port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
     
     #print(host)

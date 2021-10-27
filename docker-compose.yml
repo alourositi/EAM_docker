@@ -3,15 +3,14 @@ services:
   eam:
     build: .
     ports:
-      - "3939:3939"
       - "4567:4567"
     image: "docker_eam:latest"
     runtime: nvidia
     environment:
-      - IP_KAFKA=${IP_KAFKA}
-      - PORT_KAFKA=${PORT_KAFKA}
-      - IP_EAM=${IP_EAM}
-      - PORT_EAM=${PORT_EAM}
+      - IP_KAFKA=195.251.117.126
+      - PORT_KAFKA=9091
+      - IP_REC_FROM=0.0.0.0
+      - PORT_EAM=4567
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     command: bash -c "
