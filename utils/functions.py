@@ -61,6 +61,7 @@ def generates_msg(data, producer):
         msg_det ={
             "obj_id" : det.obj_id,
             "bbox" :{
+                "cs" : "xyz",
                 "min" : det.min,
                 "max" : det.max
             },
