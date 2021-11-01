@@ -103,6 +103,7 @@ class COCODemo(object):
 
     config_file = "modules/detector/e2e_faster_rcnn_X_101_32x8d_FPN_1x_custom.yaml"
     cfg.merge_from_file(config_file)
+    #cfg.merge_from_list(["MODEL.DEVICE", "cpu"]) # run on cpu
 
     def __init__(
         self,
