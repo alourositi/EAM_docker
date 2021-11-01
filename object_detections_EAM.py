@@ -23,13 +23,10 @@ def display_frame(det_q):
             frame=det_q.get()
 
             image=frame[0]
-            depth=frame[1]
-            CameraId= str(frame[2].hex())
-            # Display RGB and Depth frame (for test purposes)
-            colormap_image=cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.05), cv2.COLORMAP_BONE)
-            images=np.hstack((image,colormap_image))
-            cv2.namedWindow('RGB + Depth '+CameraId,cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RGB + Depth '+CameraId,images)
+            CameraId= str(frame[1].hex())
+            # Display RGB frame (for test purposes)
+            cv2.namedWindow('RGB from: '+CameraId,cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RGB from: '+CameraId,image)
             key= cv2.waitKey(1)
             if key & 0xFF == ord('q') or key==27:
                 cv2.destroyAllWindows()
@@ -66,7 +63,6 @@ def handle_client(Client, address,q):
 
         # Push to queue
         q.put(current_frame)
-        print("Frame pushed to queue")
 
 def run_detections(frame_q,det_q):
 
@@ -132,24 +128,21 @@ def run_detections(frame_q,det_q):
                         counter_uniq_object_id +=1
                         unique_dets.append(det)
 
-                det_q.put([frame.image,frame.depth,frame.CameraId])
-                print("Detection pushed to queue")
+        det_q.put([frame.image,frame.CameraId])
+        #print("Pushed detection to queue")
 
         if (time.time() - start_time) > 9:
-            print("10 seconds passed")
             
             if unique_dets!=[]:
                 # Send new detections over Kafka
                 if last_uniq_object_id==0:
                     kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets,producer))
                     kafka_thread.start()
-                    #print("Sent detections to Kafka(1st)")
                     last_uniq_object_id= counter_uniq_object_id
                 else:
                     if unique_dets[last_uniq_object_id:]!=[]:
                         kafka_thread = threading.Thread(name='non-daemon', target=generates_msg(unique_dets[last_uniq_object_id:],producer))
                         kafka_thread.start()
-                        #print("Sent detections to Kafka")
                         last_uniq_object_id= counter_uniq_object_id
             
             #unique_dets = [] #Set list of detection object as empty eath time send object to kafka
@@ -190,15 +183,11 @@ def main():
     ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     #host= ni.ifaddresses('eno1')[ni.AF_INET][0]['addr'] # Return the IP of server
     #port = 4567
-    host= os.environ['IP_REC_FROM'] #Get IP of EAM from .env file 
+    host= str(os.environ['IP_EAM']) #Get IP of EAM from .env file 
     port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
-    
-    #print(host)
-    #print(port)
 
     try:
         ServerSocket.bind((host, port))
-        print("Listening for connections")
     except socket.error as e:
         print(str(e))
 
@@ -208,9 +197,9 @@ def main():
     det_q = mp.Queue()
 
     detector_process = mp.Process(target=run_detections, args=(frame_q, det_q))
-    #display_process=mp.Process(target=display_frame, args=(det_q,))
+    display_process=mp.Process(target=display_frame, args=(det_q,))
     detector_process.start()
-    #display_process.start()
+    display_process.start()
 
     # Listen for connections
 
@@ -224,7 +213,7 @@ def main():
     except KeyboardInterrupt: 
         client_process.join()
         detector_process.join()
-        #display_process.join()
+        display_process.join()
         cv2.destroyAllWindows()
 
 if __name__=="__main__":
