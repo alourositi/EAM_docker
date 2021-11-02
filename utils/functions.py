@@ -58,7 +58,7 @@ def get_depth_of_center(x, y, width, height, frame):
 
 def generates_msg(data, producer, sender_id): 
     
-    topic= "Object_Detection"
+    topic= "Detections"
 
     head ={
         "sender_id" : sender_id,

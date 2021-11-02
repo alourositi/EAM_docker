@@ -55,8 +55,8 @@ class Object:
         
 class Person(Object):
 
-    def __init__(self, type, score, bbox, id, depth):
-        super().__init__(type, score, bbox, id, depth)
+    def __init__(self, type, score, bbox, id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, id, depth, intrin, pos, quat)
         if (self.width > 1.5*self.height):
             self.is_victim = True
             self.obj_type = "Victim"
