@@ -72,7 +72,7 @@ def generates_msg(data, producer, sender_id):
 
     header = []
     for field in head:
-        header.append((field,dumps(header[field]).encode('utf-8')))
+        header.append((field,dumps(head[field]).encode('utf-8')))
 
     msg = []
     for det in data:

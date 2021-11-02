@@ -4,10 +4,10 @@ from scipy.spatial.transform import Rotation as R
 
 def get_3D_coordinates(u, v, d, intrin, pos, quat):
     
-    fx = intrin[0]
-    fy = intrin[1]
-    cx = intrin[2]
-    cy = intrin[3]
+    fx = 384.6941223144531
+    fy = 384.6941223144531
+    cx = 322.5314025878906
+    cy = 241.5406494140625
     
     X = d / 344.455 * (u - 344.455)
     Y = d / 344.455 * (v - 344.455)
