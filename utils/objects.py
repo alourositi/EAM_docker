@@ -17,7 +17,7 @@ def get_3D_coordinates(u, v, d, intrin, pos, quat):
     r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
     vec = np.dot(r,vec)
 
-    r_q = R.from_quat(np.array(quat))
+    r_q = R.from_quat(quat)
     vec = np.dot(r_q,vec)
 
     vec = vec + np.array(pos)
@@ -71,14 +71,14 @@ class Person(Object):
 
             
 class Vehicle(Object):
-    def __init__(self, type, category, score, bbox, id, depth):
-        super().__init__(type, score, bbox, id, depth)
+    def __init__(self, type, category, score, bbox, id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, id, depth, intrin, pos, quat)
         self.category = category
 	
 	
 class Drone(Object):
-    def __init__(self, type, score, bbox, det_id, depth):
-        super().__init__(type, score, bbox, det_id, depth)
+    def __init__(self, type, score, bbox, det_id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, det_id, depth, intrin, pos, quat)
         if (self.max[2] > 1.5):
             self.airborne = True
         else:
