@@ -4,6 +4,8 @@ services:
     build: .
     ports:
       - "4567:4567"
+    volumes:
+     na- /tmp/.X11-unix:/tmp/.X11-unix
     image: "docker_eam:latest"
     runtime: nvidia
     environment:
@@ -12,6 +14,7 @@ services:
       - IP_REC_FROM=0.0.0.0
       - PORT_EAM=4567
       - NVIDIA_VISIBLE_DEVICES=all
+      - DISPLAY=$DISPLAY
       - NVIDIA_DRIVER_CAPABILITIES=all
     command: bash -c "
       python3 -u object_detections_EAM.py

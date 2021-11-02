@@ -9,20 +9,20 @@ def get_3D_coordinates(u, v, d, intrin, pos, quat):
     cx = intrin[2]
     cy = intrin[3]
     
-    X = d / fx * (u - cx)
-    Y = d / fy * (v - cy)
+    X = d / 344.455 * (u - 344.455)
+    Y = d / 344.455 * (v - 344.455)
     Z = d
 
-    vec = np.array([X,Y,Z])
-    r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
-    vec = np.dot(r,vec)
+    #vec = np.array([X,Y,Z])
+    #r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
+    #vec = np.dot(r,vec)
+#
+    #r_q = R.from_quat(quat)
+    #vec = np.dot(r_q,vec)
+#
+    #vec = vec + np.array(pos)
 
-    r_q = R.from_quat(quat)
-    vec = np.dot(r_q,vec)
-
-    vec = vec + np.array(pos)
-
-    return [vec[0], vec[1], vec[2]]
+    return [X, Y, Z]
     
 class Object:
     

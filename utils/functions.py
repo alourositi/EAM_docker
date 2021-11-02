@@ -63,16 +63,16 @@ def generates_msg(data, producer, sender_id):
     head ={
         "sender_id" : sender_id,
         "sender_type" : 'EAM',
-        "msg_id" : uuid.uuid4(),
+        "msg_id" : str(uuid.uuid4()),
         "timestamp" : int(time.time()),
         "msg_type" : 'notification',
         "msg_content" : 'detections'
 
     }
+
     header = []
     for field in head:
         header.append((field,dumps(header[field]).encode('utf-8')))
-
 
     msg = []
     for det in data:

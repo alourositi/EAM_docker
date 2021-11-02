@@ -72,7 +72,7 @@ def run_detections(frame_q,det_q):
     producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
                              value_serializer=lambda x:
                             json.dumps(x).encode('utf-8'))
-    sender_id = uuid.uuid4()
+    sender_id = str(uuid.uuid4())
 
     start_time = time.time()
     unique_dets=[]
