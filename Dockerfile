@@ -34,7 +34,7 @@ RUN apt-get -y install --no-install-recommends wget git ca-certificates bzip2 cm
 RUN python3 -m virtualenv --python=/usr/bin/python3.6 /opt/venv
 
 # git demo
-RUN git clone https://github.com/alourositi/EAM_docker.git \
+RUN git clone --branch lazaros_chnages https://github.com/alourositi/EAM_docker.git \
  && cd EAM_docker/modules/detector/ \
  && wget --progress=bar:force:noscroll https://www.dropbox.com/s/n97xv8sqrseg2oi/e2e_faster_rcnn_X_101_32x8d_FPN_1x.pth
 
