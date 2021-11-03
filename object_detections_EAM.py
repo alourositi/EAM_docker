@@ -119,14 +119,14 @@ def handle_client(s,q):
 def run_detections(frame_q,det_q):
 
     #Initializations
-    #detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
-    #producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
-    #                         value_serializer=lambda x:
-    #                        json.dumps(x).encode('utf-8'))
     detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
-    producer = KafkaProducer(bootstrap_servers=["195.251.117.126:9091"],
+    producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
                              value_serializer=lambda x:
                             json.dumps(x).encode('utf-8'))
+    #detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
+    #producer = KafkaProducer(bootstrap_servers=["195.251.117.126:9091"],
+    #                         value_serializer=lambda x:
+    #                        json.dumps(x).encode('utf-8'))
 
     sender_id = str(uuid.uuid4())
 
