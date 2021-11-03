@@ -227,7 +227,7 @@ def main():
     procs = []
     
     #host_list = os.getenv('SERVER_IPS').split(',')
-    #port_list = os.getenv('SERVER_IPS').split(',')
+    #port_list = os.getenv('SERVER_PORTS').split(',')
     #for i in range(len(host_list)):
     #    socks.append((host_list[i],int(port_list[i])))
     
