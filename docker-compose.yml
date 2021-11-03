@@ -11,8 +11,8 @@ services:
     environment:
       - IP_KAFKA=195.251.117.126
       - PORT_KAFKA=9091
-      - IP_REC_FROM=0.0.0.0
-      - PORT_EAM=4567
+      - SERVER_IPs=192.168.43.47
+      - SERVER_PORTs=4567
       - NVIDIA_VISIBLE_DEVICES=all
       - DISPLAY=$DISPLAY
       - NVIDIA_DRIVER_CAPABILITIES=all
