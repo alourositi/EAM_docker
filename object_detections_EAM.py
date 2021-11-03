@@ -1,3 +1,4 @@
+from logging import exception
 import cv2
 import socket
 import struct
@@ -23,17 +24,39 @@ def display_frame(det_q):
             frame=det_q.get()
 
             image=frame[0]
-            CameraId= str(frame[1].hex())
-            # Display RGB frame (for test purposes)
-            cv2.namedWindow('RGB '+CameraId,cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RGB '+CameraId,image)
+            depth=frame[1]
+            CameraId= str(frame[2].hex())
+            # Display RGB and Depth frame (for test purposes)
+            colormap_image=cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.05), cv2.COLORMAP_BONE)
+            images=np.hstack((image,colormap_image))
+            cv2.namedWindow('RGB + Depth '+CameraId,cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RGB + Depth '+CameraId,images)
             key= cv2.waitKey(1)
             if key & 0xFF == ord('q') or key==27:
                 cv2.destroyAllWindows()
                 break
 
-def handle_client(Client, address,q):
+def handle_client(s,q):
+
+    ClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connected = True
+
+    try:        
+        ClientSocket.connect(s)
+    except socket.error:
+        print("Could not connect to " + str(s[0]))
+        connected = False
+        ClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        while not connected:
+            try:
+                ClientSocket.connect(s)
+                connected=True
+                print("Connection established")
+            except socket.error:
+                time.sleep(2)
+                print("Trying to connect to " + str(s[0]))
     
+
     # Read messages
     while True:
 
@@ -42,21 +65,49 @@ def handle_client(Client, address,q):
         payload = 18
 
         while True:
+            try:
+                msg = ClientSocket.recv(payload-len(data))
+                if len(msg)==0:
+                    print("Empty message")
+                    print("Connection lost with " + str(s[0]))
+                    connected=False
+                    new_message = True
+                    ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    while not connected:
+                        try:
+                            ClientSocket.connect(s)
+                            connected=True
+                            print("Reconnected to " + str(s[0]))
+                        except socket.error:
+                            time.sleep(2)
+                            print("Trying to reconnect to " + str(s[0]))
 
-            msg = Client.recv(payload-len(data))
-            if new_message:
+                if new_message:
 
-                if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
-                   continue
+                    if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
+                       continue
 
-                payload = struct.unpack('l',msg[2:10])[0] + 18
-                data.extend(msg)
-                new_message= False
-                continue
+                    payload = struct.unpack('l',msg[2:10])[0] + 18
+                    data.extend(msg)
+                    new_message= False
+                    continue
 
-            data.extend(msg) 
-            if len(data)>=payload:
-                break
+                data.extend(msg) 
+                if len(data)>=payload:
+                    break
+            except socket.error:
+                print("Connection lost with " + str(s[0]))
+                connected=False
+                new_message = True
+                ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                while not connected:
+                    try:
+                        ClientSocket.connect(s)
+                        connected=True
+                        print("Reconnected to " + str(s[0]))
+                    except socket.error:
+                        time.sleep(2)
+                        print("Trying to reconnect to " + str(s[0]))
 
         # Create frame from messages
         current_frame = Frame(bytes(data))
@@ -68,10 +119,15 @@ def handle_client(Client, address,q):
 def run_detections(frame_q,det_q):
 
     #Initializations
+    #detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
+    #producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
+    #                         value_serializer=lambda x:
+    #                        json.dumps(x).encode('utf-8'))
     detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
-    producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
+    producer = KafkaProducer(bootstrap_servers=["195.251.117.126:9091"],
                              value_serializer=lambda x:
                             json.dumps(x).encode('utf-8'))
+
     sender_id = str(uuid.uuid4())
 
     start_time = time.time()
@@ -84,6 +140,7 @@ def run_detections(frame_q,det_q):
         if not frame_q.empty():
             
             frame = frame_q.get()
+            print(frame.depth.shape)
             
             result, result_labels, result_scores, result_bboxes = detector.run_on_opencv_image(frame.image)
             detections = []
@@ -125,7 +182,9 @@ def run_detections(frame_q,det_q):
                         counter_uniq_object_id +=1
                         unique_dets.append(det)
 
-            det_q.put([frame.image,frame.CameraId])
+            #det_q.put([frame.image,frame.CameraId])
+            #det_q.put([frame.depth,frame.CameraId])
+            det_q.put([frame.image,frame.depth,frame.CameraId])
 
         if (time.time() - start_time) > 9:
             print("10 seconds passed")
@@ -151,21 +210,8 @@ def run_detections(frame_q,det_q):
 
 def main():
 
-    # Initialize TCP server
-
-    ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host= os.environ['IP_REC_FROM'] #Get IP of EAM from .env file 
-    port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
-    display = True
-
-    try:
-        ServerSocket.bind((host, port))
-        print("Listening for connections")
-    except socket.error as e:
-        print(str(e))
-
     # Initialize queues and processes
-
+    display = True
     frame_q = mp.Queue()
     det_q = mp.Queue()
 
@@ -174,22 +220,68 @@ def main():
     if display:
         display_process=mp.Process(target=display_frame, args=(det_q,))
         display_process.start()
+    
+    # Initialize TCP server
 
-    # Listen for connections
+    socks = []
+    procs = []
+    
+    #host_list = os.getenv('SERVER_IPS').split(',')
+    #port_list = os.getenv('SERVER_IPS').split(',')
+    #for i in range(len(host_list)):
+    #    socks.append((host_list[i],int(port_list[i])))
+    
+    host= "192.168.43.47" #Get IP of EAM from .env file 
+    port = 4567 #Get port of EAM from .env file
+    
+    socks.append((host,port))
 
-    ServerSocket.listen()
+    #host= "195.251.117.249"
+    #port= 4567
+    #socks.append((host,port))
+    
+    
+    for i in range(len(socks)):
+        procs.append(mp.Process(target=handle_client, args=(socks[i], frame_q)))
+        procs[i].start()
+        #client_process = mp.Process(target=handle_client, args=(s, frame_q))
+        #client_process.start()
 
-    try:
-        while True:
-            Client, address = ServerSocket.accept()
-            client_process = mp.Process(target=handle_client, args=(Client, address,frame_q))
-            client_process.start()
-    except KeyboardInterrupt: 
-        client_process.join()
-        detector_process.join()
-        if display:
-            display_process.join()
-        cv2.destroyAllWindows()
+    #client_process.join()
+    for p in procs:
+        p.join()
+    detector_process.join()
+    display_process.join()
+    cv2.destroyAllWindows()
+
+    
+    
+    
+    #ClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #host= os.environ['IP_REC_FROM'] #Get IP of EAM from .env file 
+    #port = int(os.environ['PORT_EAM']) #Get port of EAM from .env file
+    
+    #ServerSocket.bind((host, port))
+    #ClientSocket.connect((host, port))
+    #print(ClientSocket)
+    #client_process = mp.Process(target=handle_client, args=(host, port,frame_q))
+    #client_process.start()
+    #client_process.join()
+    #ClientSocket.close()
+    #except socket.error as e:
+    #    print(str(e))
+    #    
+    #    continue
+#
+    #    #except socket.error as e:
+        
 
 if __name__=="__main__":
+
     main() 
+    
+    #client_process.join()
+    #detector_process.join()
+    #if display:
+    #    display_process.join()
+    #cv2.destroyAllWindows()

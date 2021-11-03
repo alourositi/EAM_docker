@@ -17,6 +17,7 @@ class Frame:
         self.depth_height = struct.unpack('H',msg[41:43])[0]
         self.depth_type = struct.unpack('b',msg[43:44])[0]
         self.depth_length = struct.unpack('l',msg[44:52])[0]
+        #print(self.depth_length)
         
         self.px  = struct.unpack('d',msg[52:60])[0]
         self.py  = struct.unpack('d',msg[60:68])[0]
@@ -37,9 +38,13 @@ class Frame:
 
         #self.image = cv2.imdecode(np.fromstring(msg[188:188+self.rgb_length], dtype='uint8'), cv2.IMREAD_UNCHANGED)
         self.image = cv2.imdecode(np.fromstring(msg[196:196+self.rgb_length], dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-        self.depth = cv2.imdecode(np.fromstring(msg[196+self.rgb_length:196+self.rgb_length+self.depth_length], dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        #self.depth = cv2.imdecode(np.fromstring(msg[196+self.rgb_length:196+self.rgb_length+self.depth_length], dtype=np.uint16), cv2.IMREAD_UNCHANGED)
+        #self.depth = cv2.imdecode(np.frombuffer(msg[196+self.rgb_length:196+self.rgb_length+self.depth_length], dtype=np.uint16), cv2.IMREAD_UNCHANGED)
+        self.depth = np.frombuffer(msg[196+self.rgb_length:196+self.rgb_length+self.depth_length], dtype=np.uint16).reshape((self.depth_height,self.depth_width))
+        
+        #print(self.depth)
         #self.depth = cv2.imdecode(np.fromstring(msg[188+self.rgb_length:188+self.rgb_length+self.depth_length], dtype=np.uint8), cv2.IMREAD_ANYDEPTH)
 
 
-        B, G, R = np.split(self.depth, [1, 2], 2)
-        self.depth = (B * 256 + G).astype(np.uint16).squeeze()
+        #B, G, R = np.split(self.depth, [1, 2], 2)
+        #self.depth = (B * 256 + G).astype(np.uint16).squeeze()
