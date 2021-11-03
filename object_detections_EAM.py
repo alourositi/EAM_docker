@@ -226,13 +226,13 @@ def main():
     socks = []
     procs = []
     
-    #host_list = os.getenv('SERVER_IPS').split(',')
-    #port_list = os.getenv('SERVER_PORTS').split(',')
-    #for i in range(len(host_list)):
-    #    socks.append((host_list[i],int(port_list[i])))
+    host_list = os.getenv('SERVER_IPS').split(',')
+    port_list = os.getenv('SERVER_PORTS').split(',')
+    for i in range(len(host_list)):
+        socks.append((host_list[i],int(port_list[i])))
     
-    host= "192.168.43.47" #Get IP of EAM from .env file 
-    port = 4567 #Get port of EAM from .env file
+    #host= "192.168.43.47" #Get IP of EAM from .env file 
+    #port = 4567 #Get port of EAM from .env file
     
     socks.append((host,port))
 
