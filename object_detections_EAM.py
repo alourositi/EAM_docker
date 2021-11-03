@@ -234,7 +234,7 @@ def main():
     #host= "192.168.43.47" #Get IP of EAM from .env file 
     #port = 4567 #Get port of EAM from .env file
     
-    socks.append((host,port))
+    #socks.append((host,port))
 
     #host= "195.251.117.249"
     #port= 4567
