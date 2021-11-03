@@ -5,7 +5,7 @@ services:
     ports:
       - "4567:4567"
     volumes:
-     na- /tmp/.X11-unix:/tmp/.X11-unix
+      - /tmp/.X11-unix:/tmp/.X11-unix
     image: "docker_eam:latest"
     runtime: nvidia
     environment:
