@@ -4,24 +4,25 @@ from scipy.spatial.transform import Rotation as R
 
 def get_3D_coordinates(u, v, d, intrin, pos, quat):
     
-    fx = 384.6941223144531
-    fy = 384.6941223144531
-    cx = 322.5314025878906
-    cy = 241.5406494140625
+    fx = intrin.fx #384.6941223144531
+    fy = intrin.fy #384.6941223144531
+    cx = intrin.cx #322.5314025878906
+    cy = intrin.cy #241.5406494140625
     
-    X = d / 344.455 * (u - 344.455)
-    Y = d / 344.455 * (v - 344.455)
+    X = d/fx * (u - cx)
+    Y = d/fy * (v - cy)
     Z = d
 
     #vec = np.array([X,Y,Z])
     #r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
     #vec = np.dot(r,vec)
 #
-    #r_q = R.from_quat(quat)
+    #r_q = R.from_quat(quat).as_matrix()
     #vec = np.dot(r_q,vec)
 #
     #vec = vec + np.array(pos)
 
+    #return [vec[0], vec[1], vec[2]]
     return [X, Y, Z]
     
 class Object:

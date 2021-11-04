@@ -43,6 +43,8 @@ def handle_client(s,q):
 
     try:        
         ClientSocket.connect(s)
+        #ClientSocket.setblocking(0)
+        print("Connected to " + str(s[0]))
     except socket.error:
         print("Could not connect to " + str(s[0]))
         connected = False
@@ -63,54 +65,68 @@ def handle_client(s,q):
         data = bytearray()
         new_message = True
         payload = 18
+        print("Reading")
 
         while True:
             try:
                 msg = ClientSocket.recv(payload-len(data))
-                if len(msg)==0:
-                    print("Empty message")
-                    print("Connection lost with " + str(s[0]))
-                    connected=False
-                    new_message = True
-                    ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    while not connected:
-                        try:
-                            ClientSocket.connect(s)
-                            connected=True
-                            print("Reconnected to " + str(s[0]))
-                        except socket.error:
-                            time.sleep(2)
-                            print("Trying to reconnect to " + str(s[0]))
+                #print("Message Receiving")
+                #if len(msg)==0:
+                #    print("Empty message")
+                #    #print("Connection lost with " + str(s[0]))
+                #    connected=False
+                #    new_message = True
+                #    ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                #    while not connected:
+                #        try:
+                #            ClientSocket.connect(s)
+                #            #ClientSocket.setblocking(0)
+                #            connected=True
+                #            print("Reconnected to " + str(s[0]))
+                #        except socket.error:
+                #            time.sleep(2)
+                #            print("Trying to reconnect to " + str(s[0]))
 
                 if new_message:
 
                     if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
+                       print("Check message start")
                        continue
-
+                    #print("msg[:1].hex()")
+                    #print(msg[:1].hex())
+                    #print("msg[1:2].hex()")
+                    #print(msg[1:2].hex())
                     payload = struct.unpack('l',msg[2:10])[0] + 18
+                    #print("Payload : " + str(payload))
                     data.extend(msg)
                     new_message= False
                     continue
 
-                data.extend(msg) 
+                data.extend(msg)
+
                 if len(data)>=payload:
+                    print("Full message")
                     break
-            except socket.error:
-                print("Connection lost with " + str(s[0]))
+            except socket.error as e:
+                print(str(e))
+                #print("Connection lost with " + str(s[0]))
                 connected=False
                 new_message = True
                 ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 while not connected:
                     try:
                         ClientSocket.connect(s)
+                        ClientSocket.setblocking(0)
                         connected=True
                         print("Reconnected to " + str(s[0]))
                     except socket.error:
-                        time.sleep(2)
+                        time.sleep(5)
                         print("Trying to reconnect to " + str(s[0]))
 
         # Create frame from messages
         current_frame = Frame(bytes(data))
+        print("RGB shape : " + str(current_frame.image.shape))
+        print("Depth shape : " + str(current_frame.depth.shape))
 
         # Push to queue
         q.put(current_frame)

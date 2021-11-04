@@ -86,7 +86,10 @@ def generates_msg(data, producer, sender_id):
             "obj_type" : det.obj_type
         }
         msg.append(msg_det)
-    producer.send(topic, value=msg, headers=header)
+    try:
+    	producer.send(topic, value=msg, headers=header)
+    except:
+        print("Failed sending message to Kafka")
 
 def get_3D_coordinates(u, v, d, intrinsics):
     
@@ -141,7 +144,7 @@ def get_average_out_depth(xmin,ymin,xmax,ymax,depth_frame):
 def isVictim(xmin,ymin,xmax,ymax,frame, person, z):
 
     indepth = get_average_in_depth(xmin,ymin,xmax,ymax,frame)
-    outdepth = get_average_out_depth(xmin,ymin,xmax,ymax,frame)
+    #outdepth = get_average_out_depth(xmin,ymin,xmax,ymax,frame)
 
     diff = indepth - z
     #diff = outdepth -indepth
@@ -149,11 +152,11 @@ def isVictim(xmin,ymin,xmax,ymax,frame, person, z):
     #print(outdepth)
     #print(indepth)
 
-    if outdepth==5.0:
-        person.is_responder = False
-        person.obj_type = "Person"
-        person.is_victim = False
-        return False
+    #if outdepth==5.0:
+    #    person.is_responder = False
+    #    person.obj_type = "Person"
+    #    person.is_victim = False
+    #    return False
 
     if diff < 0.2:
         person.is_victim = True
