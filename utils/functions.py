@@ -132,9 +132,6 @@ def get_average_out_depth(xmin,ymin,xmax,ymax,depth_frame):
             if y<ymin or y>ymax or x<xmin or x>xmax:
                 if get_z_distance(x,y, depth_frame)!=0:
                     depths.append(get_z_distance(x,y, depth_frame))
-            #if x<xmin or x>xmax:
-            #    if depth_frame.get_distance(x,y)!=0:
-            #        depths.append(depth_frame.get_distance(x,y))
     if depths!=[]:    
         return median(depths)
     return 5.0
@@ -148,15 +145,6 @@ def isVictim(xmin,ymin,xmax,ymax,frame, person, z):
 
     diff = indepth - z
     #diff = outdepth -indepth
-    #diff=outdepth - z
-    #print(outdepth)
-    #print(indepth)
-
-    #if outdepth==5.0:
-    #    person.is_responder = False
-    #    person.obj_type = "Person"
-    #    person.is_victim = False
-    #    return False
 
     if diff < 0.2:
         person.is_victim = True

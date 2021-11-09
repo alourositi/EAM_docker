@@ -4,26 +4,26 @@ from scipy.spatial.transform import Rotation as R
 
 def get_3D_coordinates(u, v, d, intrin, pos, quat):
     
-    fx = intrin.fx #384.6941223144531
-    fy = intrin.fy #384.6941223144531
-    cx = intrin.cx #322.5314025878906
-    cy = intrin.cy #241.5406494140625
+    fx = intrin[0] #384.6941223144531
+    fy = intrin[1] #384.6941223144531
+    cx = intrin[2] #322.5314025878906
+    cy = intrin[3] #241.5406494140625
     
     X = d/fx * (u - cx)
     Y = d/fy * (v - cy)
     Z = d
 
-    #vec = np.array([X,Y,Z])
-    #r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
-    #vec = np.dot(r,vec)
-#
-    #r_q = R.from_quat(quat).as_matrix()
-    #vec = np.dot(r_q,vec)
-#
-    #vec = vec + np.array(pos)
+    vec = np.array([X,Y,Z])
+    r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
+    vec = np.dot(r,vec)
 
-    #return [vec[0], vec[1], vec[2]]
-    return [X, Y, Z]
+    r_q = R.from_quat(quat).as_matrix()
+    vec = np.dot(r_q,vec)
+
+    vec = vec + np.array(pos)
+
+    return [vec[0], vec[1], vec[2]]
+    #return [X, Y, Z]
     
 class Object:
     
@@ -44,7 +44,6 @@ class Object:
 
     def draw_detection(self,image):
        image = cv2.rectangle(image, (int(self.bbox[0]),int(self.bbox[1])), (int(self.bbox[2]),int(self.bbox[3])), (36,255,12), 2)
-       #cv2.putText(image, f'{self.obj_type}: {str(round(self.score, 2))}, id: {self.obj_id}', (int(self.bbox[0])+2,int(self.bbox[1] + 17)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (36,255,12), 2)
        cv2.putText(image, f'{self.obj_type}: {str(round(self.score, 2))}', (int(self.bbox[0])+2,int(self.bbox[1] + 17)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (36,255,12), 2)
        
 
