@@ -15,6 +15,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - DISPLAY=$DISPLAY
       - NVIDIA_DRIVER_CAPABILITIES=all
+      - DISPLAY = $DISPLAY
     command: bash -c "
       python3 -u object_detections_EAM.py
       "

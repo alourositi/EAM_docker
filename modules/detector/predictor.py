@@ -137,7 +137,8 @@ class COCODemo(object):
         # used to make colors for each class
         self.palette = torch.tensor([2 ** 25 - 1, 2 ** 15 - 1, 2 ** 21 - 1])
 
-        self.cpu_device = torch.device("cpu")
+        #self.cpu_device = torch.device("cpu")
+        self.cpu.device = torch.device("gpu")
         self.confidence_threshold = confidence_threshold
         self.show_mask_heatmaps = show_mask_heatmaps
         self.masks_per_dim = masks_per_dim
@@ -172,10 +173,10 @@ class COCODemo(object):
         )
         return transform
 
-    def keep_labels(self,predictions):
+    def keep_labels(self,predictions,our_list):
         
         #our_list= [1, 3, 4 ,6, 7, 8, 11, 12, 40, 65]
-        our_list = ["person","car","motorcycle","bus","train","truck","fire hydrant","stop sign", "backpack", "handbag", "suitcase", "bottle", "knife", "scissors", "mouse", "helicopter", "motobike", "drone"]
+        #our_list = ["person","car","motorcycle","bus","train","truck","fire hydrant","stop sign", "backpack", "handbag", "suitcase", "bottle", "knife", "scissors", "mouse", "helicopter", "motobike", "drone"]
         #our_list = ["person","car","motorcycle","bus","train","truck","fire hydrant","stop sign", "backpack", "handbag", "suitcase", "bottle", "knife", "scissors", "mouse"]
         #our_list = ["person"]
         labels = predictions.get_field("labels").tolist()
@@ -189,7 +190,7 @@ class COCODemo(object):
      
         return predictions[idx]
 
-    def run_on_opencv_image(self, image):
+    def run_on_opencv_image(self, image, our_list):
         """
         Arguments:
             image (np.ndarray): an image as returned by OpenCV
@@ -207,7 +208,7 @@ class COCODemo(object):
         predictions = self.compute_prediction(image)
         #print(predictions)
         top_predictions = self.select_top_predictions(predictions)
-        label_predictions= self.keep_labels(top_predictions)
+        label_predictions= self.keep_labels(top_predictions, our_list)
         
         result = image.copy()
         if self.show_mask_heatmaps:

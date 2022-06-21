@@ -14,9 +14,22 @@ from dotenv import load_dotenv
 from utils.eucl_tracker import EuclideanDistTracker
 from modules.detector.predictor import COCODemo
 from kafka import KafkaProducer
-from utils.objects import Person
+from utils.objects import Person, Object
 from utils.functions import*
 from utils.frame_message import Frame
+import torch
+
+from queue import Queue,Empty
+
+#from Queue import Empty
+class ClearableQueue(Queue):
+
+    def clear(self):
+        try:
+            while True:
+                self.get_nowait()
+        except Empty:
+            pass
 
 
 def display_frame(det_q):
@@ -65,8 +78,7 @@ def handle_client(s,q):
         data = bytearray()
         new_message = True
         payload = 18
-        print("Reading")
-
+        
         while True:
             try:
                 msg = ClientSocket.recv(payload-len(data))
@@ -89,12 +101,39 @@ def handle_client(s,q):
             except socket.error as e:
                 print(str(e))
                 #print("Connection lost with " + str(s[0]))
+
+        while True:
+            try:
+                print(payload)
+                print(len(data))
+                msg = ClientSocket.recv(payload-len(data))
+                if len(msg) == 0:
+                    raise socket.error
+
+                if new_message:
+
+                    if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
+                       #print("Check message start...")
+                       continue
+                    payload = struct.unpack('l',msg[2:10])[0] + 18
+                    data.extend(msg)
+                    new_message= False
+                    continue
+
+                data.extend(msg)
+
+                if len(data)>=payload:
+                    #print("Full message")
+                    break
+            except socket.error as e:
+                print(str(e))
+                print("Connection lost with " + str(s[0]))
+
                 connected=False
                 new_message = True
                 ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 while not connected:
                     try:
-                        ClientSocket.connect(s)
                         ClientSocket.setblocking(0)
                         connected=True
                         print("Reconnected to " + str(s[0]))
@@ -104,17 +143,18 @@ def handle_client(s,q):
 
         # Create frame from messages
         current_frame = Frame(bytes(data))
-        print("RGB shape : " + str(current_frame.image.shape))
-        print("Depth shape : " + str(current_frame.depth.shape))
+        #print("RGB shape : " + str(current_frame.image.shape))
+        #print("Depth shape : " + str(current_frame.depth.shape))
 
         # Push to queue
         q.put(current_frame)
         print("Frame pushed to queue")
-
+        
 def run_detections(frame_q,det_q):
 
     #Initializations
-    detector = COCODemo(min_image_size=640, confidence_threshold=0.9)
+    our_list = os.getenv('our_list').split(',')
+    detector = COCODemo(min_image_size=640, confidence_threshold=0.7)
     producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
                              value_serializer=lambda x:
                             json.dumps(x).encode('utf-8'))
@@ -126,6 +166,8 @@ def run_detections(frame_q,det_q):
     counter_uniq_object_id=0
     last_uniq_object_id=0
 
+    frame_cnt = 0
+
     while True:
 
         if not frame_q.empty():
@@ -133,7 +175,12 @@ def run_detections(frame_q,det_q):
             frame = frame_q.get()
             print(frame.depth.shape)
             
-            result, result_labels, result_scores, result_bboxes = detector.run_on_opencv_image(frame.image)
+            start_inf_time = time.time()
+            result, result_labels, result_scores, result_bboxes = detector.run_on_opencv_image(frame.image, our_list)
+            end_inf_time = time.time() - start_inf_time
+
+            print("Inf time : " + str(end_inf_time))
+
             detections = []
             if result_labels!=[]:
                 for x in range(len(result_labels)):
@@ -144,14 +191,39 @@ def run_detections(frame_q,det_q):
                     object_width = round(result_bboxes[x][2]-result_bboxes[x][0])
                     object_height = round(result_bboxes[x][3]-result_bboxes[x][1])
                     z = get_depth_of_center(xc,yc,object_width, object_height, frame.depth)
+
+                    z_time = time.time() - start_inf_time - end_inf_time
+                    print("Z time: " + str(z_time))
+                    #z = 0.3
                     if z==0: # do not calculate object to close on camera
                         continue
 
+                    ## Create Detection object
+                    #obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
+                    #isVictim(int(result_bboxes[x][0]),int(result_bboxes[x][1]),int(result_bboxes[x][2]),int(result_bboxes[x][3]), frame.depth, obj, z)
+                    #victim_time = time.time() - start_inf_time - end_inf_time - z_time
+                    #print("victim time: " + str(victim_time))
+                    #if result_labels[x]=="person":
+                    #    detections.append(obj)
+
                     # Create Detection object
-                    obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
-                    isVictim(int(result_bboxes[x][0]),int(result_bboxes[x][1]),int(result_bboxes[x][2]),int(result_bboxes[x][3]), frame.depth, obj, z)
+
                     if result_labels[x]=="person":
-                        detections.append(obj)
+                        obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
+                        
+                        isVictim(int(result_bboxes[x][0]),int(result_bboxes[x][1]),int(result_bboxes[x][2]),int(result_bboxes[x][3]), frame.depth, obj, z)
+                    else:
+                        obj = Object(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
+
+                    victim_time = time.time() - start_inf_time - end_inf_time - z_time
+                    print("victim time: " + str(victim_time))
+                    detections.append(obj) 
+
+
+                    
+
+            #det_time = time.time() - start_inf_time - end_inf_time - z_time - victim_time
+            #print("Calculations time: " +str(det_time))
 
             if detections!=[]:
                 if unique_dets!=[]:
@@ -173,10 +245,20 @@ def run_detections(frame_q,det_q):
                         counter_uniq_object_id +=1
                         unique_dets.append(det)
 
+            #uni_time = time.time() - start_inf_time - end_inf_time - z_time - victim_time
+            #print("Finding uniques time: " + str(uni_time))
+            frame_cnt += 1
+            if frame_cnt < 10:
+                while not frame_q.empty():
+                    frame_q.get_nowait()
+                continue
+            
             det_q.put([frame.image,frame.depth,frame.CameraId])
+            print("Detection pushed to queue")
+
 
         if (time.time() - start_time) > 9:
-            print("10 seconds passed")
+            #print("10 seconds passed")
             
             if unique_dets!=[]:
                 # Send new detections over Kafka
@@ -196,15 +278,14 @@ def run_detections(frame_q,det_q):
             start_time = time.time()
 
 
-
 def main():
-
-    #load_dotenv()
 
     # Initialize queues and processes
     display = True
     frame_q = mp.Queue()
+    #frame_q = ClearableQueue()
     det_q = mp.Queue()
+    #det_q = ClearableQueue()
 
     detector_process = mp.Process(target=run_detections, args=(frame_q, det_q))
     detector_process.start()
@@ -225,7 +306,7 @@ def main():
     for i in range(len(socks)):
         procs.append(mp.Process(target=handle_client, args=(socks[i], frame_q)))
         procs[i].start()
-
+        
     for p in procs:
         p.join()
     detector_process.join()
