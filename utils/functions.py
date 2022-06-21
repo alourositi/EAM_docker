@@ -30,7 +30,12 @@ def calculate_spatial_distance(object1, object2):
 
 
 def get_z_distance(x,y, depth_frame):
-    return float(depth_frame[y][x]/1000)
+    #z_time = time.time()
+    z = float(depth_frame[y][x]/1000)
+    #z_time = time.time() - z_time
+
+    #print("read depth: " + str(z_time))
+    return z
 
 def convert_to_pseudo_thermal(img):
 
@@ -45,16 +50,30 @@ def get_depth_of_center(x, y, width, height, frame):
    
     width = math.ceil(0.5 * width/2)
     height = math.ceil(0.5 * height/2)
-    depths = []
+    #depths = []
+    depths = 0
+    cnt = 0
 
-    for i in range(1-width,width):    
-        for j in range(1-height,height):
-            depths.append(get_z_distance(x+i,y+j, frame))
+    xmin = x-width
+    xmax = x+width
+    ymin = y-height
+    ymax = y+height
 
-    if len(depths)!=1:
-        return median(depths)
-    else:
-        return depths[0]
+    cropped_frame = frame[xmin:xmax,ymin:ymax]
+    return np.mean(cropped_frame)/1000
+
+    #for i in range(1-width,width):    
+    #    for j in range(1-height,height):
+    #    #    depths.append(get_z_distance(x+i,y+j, frame))
+    #        depths += get_z_distance(x+i,y+j, frame)
+    #        cnt += 1
+#
+    #return depths/cnt
+
+    #if len(depths)!=1:
+    #    return median(depths)
+    #else:
+    #    return depths[0]
 
 def generates_msg(data, producer, sender_id): 
     
@@ -79,7 +98,7 @@ def generates_msg(data, producer, sender_id):
         msg_det ={
             "obj_id" : det.obj_id,
             "bbox" :{
-                "cs" : "xyz",
+                "cs" : "wgs84",
                 "min" : det.min,
                 "max" : det.max
             },
@@ -109,15 +128,23 @@ def get_average_in_depth(xmin,ymin,xmax,ymax,depth_frame):
     width = xmax - xmin
     height = ymax - ymin
 
-    depths = []
-    for x in range(xmin,xmin + width):
-        for y in range(ymin,ymin + height):
-            if get_z_distance(x,y, depth_frame)!=0:
-                depths.append(get_z_distance(x,y, depth_frame))
+    cropped_depth_frame = depth_frame[xmin:xmax, ymin:ymax]
+    #shp = cropped_depth_frame.shape
+    #m_depth = np.convolve(cropped_depth_frame.ravel(), np.ones((shp[0],shp[1]))/(shp[0]*shp[1]), mode='full')
+    #m_depth = np.convolve(cropped_depth_frame.ravel(), np.ones(shp[0]*shp[1])/(shp[0]*shp[1]), mode='full')
 
-    if depths!=[]:    
-        return mean(depths)
-    return 0
+    #print(m_depth)
+
+    return np.mean(cropped_depth_frame)/1000
+    #depths = []
+    #for x in range(xmin,xmin + width):
+    #    for y in range(ymin,ymin + height):
+    #        if get_z_distance(x,y, depth_frame)!=0:
+    #            depths.append(get_z_distance(x,y, depth_frame))
+#
+    #if depths!=[]:    
+    #    return mean(depths)
+    #return 0
 
 def get_average_out_depth(xmin,ymin,xmax,ymax,depth_frame):
 
@@ -146,7 +173,8 @@ def isVictim(xmin,ymin,xmax,ymax,frame, person, z):
     diff = indepth - z
     #diff = outdepth -indepth
 
-    if diff < 0.2:
+    #if diff < 0.2:
+    if diff < 0.4:
         person.is_victim = True
         person.obj_type = "Victim"
         person.is_responder = False

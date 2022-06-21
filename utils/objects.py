@@ -1,9 +1,18 @@
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from utils.gps_utils import GPSutils
 
 def get_3D_coordinates(u, v, d, intrin, pos, quat):
     
+
+    #print("Lat: " +str(pos[0]))
+    #print("Lon: " + str(pos[1]))
+    #print("Alt: " + str(pos[2]))
+
+    gps = GPSutils()
+    x, y, z = gps.GeodeticToEcef(pos[0], pos[1], pos[2])
+    pos_xyz = [x, y, z]
     fx = intrin[0] #384.6941223144531
     fy = intrin[1] #384.6941223144531
     cx = intrin[2] #322.5314025878906
@@ -20,9 +29,11 @@ def get_3D_coordinates(u, v, d, intrin, pos, quat):
     r_q = R.from_quat(quat).as_matrix()
     vec = np.dot(r_q,vec)
 
-    vec = vec + np.array(pos)
+    vec = vec + np.array(pos_xyz)
 
-    return [vec[0], vec[1], vec[2]]
+    vec_wgs64 = gps.EcefToGeodetic(vec[0], vec[1], vec[2])
+    #return [vec[0], vec[1], vec[2]]
+    return [vec_wgs64[0], vec_wgs64[1], vec_wgs64[2]]
     #return [X, Y, Z]
     
 class Object:

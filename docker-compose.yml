@@ -4,13 +4,24 @@ services:
     build: .
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./utils:/EAM_docker/utils
+      - ./object_detections_EAM.py:/EAM_docker/object_detections_EAM.py
     image: "docker_eam:latest"
     network_mode: "host"
     runtime: nvidia
     environment:
-      - IP_KAFKA=intrepid01.diginext.fr
+      #- IP_KAFKA=intrepid01.diginext.fr
+      - IP_KAFKA=195.251.117.126
+      #- IP_KAFKA=192.168.30.210
       - PORT_KAFKA=9092
-      - SERVER_IPS=192.168.100.30
+      #- SERVER_IPS=87.238.231.8
+      #- SERVER_IPS=192.168.192.33
+      #- SERVER_IPS=195.251.117.64
+      - SERVER_IPS=195.251.117.59
+      #- SERVER_IPS=195.251.117.245
+      #- SERVER_IPS=192.168.192.89
+      #- SERVER_IPS=127.0.0.1
+      - our_list=person,car,motorcycle,bus,train,truck,fire hydrant,stop sign,backpack,handbag,suitcase,bottle,knife,scissors,mouse,helicopter,motobike,drone
       - SERVER_PORTS=23098
       - NVIDIA_VISIBLE_DEVICES=all
       - DISPLAY=$DISPLAY
