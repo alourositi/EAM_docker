@@ -190,7 +190,11 @@ class COCODemo(object):
      
         return predictions[idx]
 
+<<<<<<< HEAD
     def run_on_opencv_image(self, image,our_list):
+=======
+    def run_on_opencv_image(self, image, our_list):
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
         """
         Arguments:
             image (np.ndarray): an image as returned by OpenCV

@@ -78,7 +78,41 @@ def handle_client(s,q):
         data = bytearray()
         new_message = True
         payload = 18
+<<<<<<< HEAD
         #print("Reading")
+
+=======
+        
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
+        while True:
+            try:
+                print(payload)
+                print(len(data))
+                msg = ClientSocket.recv(payload-len(data))
+                if len(msg) == 0:
+                    raise socket.error
+
+                if new_message:
+
+                    if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
+                       #print("Check message start...")
+                       continue
+                    payload = struct.unpack('l',msg[2:10])[0] + 18
+                    data.extend(msg)
+                    new_message= False
+                    continue
+
+                data.extend(msg)
+
+                if len(data)>=payload:
+                    #print("Full message")
+                    break
+            except socket.error as e:
+                print(str(e))
+<<<<<<< HEAD
+                print("Connection lost with " + str(s[0]))
+=======
+                #print("Connection lost with " + str(s[0]))
 
         while True:
             try:
@@ -106,13 +140,19 @@ def handle_client(s,q):
             except socket.error as e:
                 print(str(e))
                 print("Connection lost with " + str(s[0]))
+
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
                 connected=False
                 new_message = True
                 ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 while not connected:
                     try:
+<<<<<<< HEAD
                         ClientSocket.connect(s)
                         #ClientSocket.setblocking(0)
+=======
+                        ClientSocket.setblocking(0)
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
                         connected=True
                         print("Reconnected to " + str(s[0]))
                     except socket.error:
@@ -184,8 +224,11 @@ def run_detections(frame_q,det_q):
                     #    detections.append(obj)
 
                     # Create Detection object
+<<<<<<< HEAD
                     #obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
                     
+=======
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
 
                     if result_labels[x]=="person":
                         obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
@@ -234,6 +277,10 @@ def run_detections(frame_q,det_q):
             
             det_q.put([frame.image,frame.depth,frame.CameraId])
             print("Detection pushed to queue")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 85edd23353ad8982e6eb693759cbcab672c13582
 
         if (time.time() - start_time) > 9:
             #print("10 seconds passed")
@@ -256,10 +303,7 @@ def run_detections(frame_q,det_q):
             start_time = time.time()
 
 
-
 def main():
-
-    #load_dotenv()
 
     # Initialize queues and processes
     display = True
@@ -287,7 +331,7 @@ def main():
     for i in range(len(socks)):
         procs.append(mp.Process(target=handle_client, args=(socks[i], frame_q)))
         procs[i].start()
-
+        
     for p in procs:
         p.join()
     detector_process.join()

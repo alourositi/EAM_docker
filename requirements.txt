@@ -8,15 +8,13 @@ ninja==1.10.2
 numpy==1.19.5
 opencv-contrib-python==4.5.3.56
 Pillow==8.3.2
-#pycocotools==2.0.2
 pyparsing==2.4.7
 python-dateutil==2.8.2
 PyYAML==5.4.1
 six==1.16.0
 torch==1.1.0
-#torch==1.4.0
 torchvision==0.3.0
-#torchvision==0.5.0
 tqdm==4.62.2
 yacs==0.1.8
-scipy 
+scipy
+python-dotenv
