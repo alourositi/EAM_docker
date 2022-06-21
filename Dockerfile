@@ -14,10 +14,18 @@ FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-devel-ubuntu${distro}
 ENV TZ=Europe/Athens
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+RUN rm /etc/apt/sources.list.d/cuda.list
+RUN rm /etc/apt/sources.list.d/nvidia-ml.list
+RUN apt-key del 7fa2af80
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
+
 # install basics
 RUN apt-get -y update \
- && apt-get -y install --no-install-recommends apt-utils software-properties-common \
+ && apt-get -y install --no-install-recommends apt-utils software-properties-common\
  && apt-add-repository -y ppa:deadsnakes/ppa -u
+
 
 # htop curl tree vim iotop bmon
 RUN apt-get -y install --no-install-recommends wget git ca-certificates bzip2 cmake vim \
@@ -34,7 +42,7 @@ RUN apt-get -y install --no-install-recommends wget git ca-certificates bzip2 cm
 RUN python3 -m virtualenv --python=/usr/bin/python3.6 /opt/venv
 
 # git demo
-RUN git clone --branch lazaros_chnages https://github.com/alourositi/EAM_docker.git \
+RUN git clone --branch reverse https://github.com/alourositi/EAM_docker.git \
  && cd EAM_docker/modules/detector/ \
  && wget --progress=bar:force:noscroll https://www.dropbox.com/s/n97xv8sqrseg2oi/e2e_faster_rcnn_X_101_32x8d_FPN_1x.pth
 
