@@ -2,19 +2,16 @@ version: "3"
 services:
   eam:
     build: .
-    ports:
-      - "4567:4567"
     volumes:
-     na- /tmp/.X11-unix:/tmp/.X11-unix
+      - /tmp/.X11-unix:/tmp/.X11-unix
     image: "docker_eam:latest"
-    volumes:
-     na- /tmp/.X11-unix:/tmp/.X11-unix
+    network_mode: "host"
     runtime: nvidia
     environment:
-      - IP_KAFKA=195.251.117.126
-      - PORT_KAFKA=9091
-      - IP_REC_FROM=0.0.0.0
-      - PORT_EAM=4567
+      - IP_KAFKA=intrepid01.diginext.fr
+      - PORT_KAFKA=9092
+      - SERVER_IPS=192.168.100.30
+      - SERVER_PORTS=23098
       - NVIDIA_VISIBLE_DEVICES=all
       - DISPLAY=$DISPLAY
       - NVIDIA_DRIVER_CAPABILITIES=all

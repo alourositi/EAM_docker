@@ -11,7 +11,6 @@ import multiprocessing as mp
 import uuid
 from dotenv import load_dotenv
 
-
 from utils.eucl_tracker import EuclideanDistTracker
 from modules.detector.predictor import COCODemo
 from kafka import KafkaProducer
@@ -39,10 +38,13 @@ def display_frame(det_q):
             frame=det_q.get()
 
             image=frame[0]
-            CameraId= str(frame[1].hex())
-            # Display RGB frame (for test purposes)
-            cv2.namedWindow('RGB '+CameraId,cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RGB '+CameraId,image)
+            depth=frame[1]
+            CameraId= str(frame[2].hex())
+            # Display RGB and Depth frame (for test purposes)
+            colormap_image=cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.05), cv2.COLORMAP_BONE)
+            images=np.hstack((image,colormap_image))
+            cv2.namedWindow('RGB + Depth '+CameraId,cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RGB + Depth '+CameraId,images)
             key= cv2.waitKey(1)
             if key & 0xFF == ord('q') or key==27:
                 cv2.destroyAllWindows()
@@ -76,7 +78,29 @@ def handle_client(s,q):
         data = bytearray()
         new_message = True
         payload = 18
-        #print("Reading")
+        
+        while True:
+            try:
+                msg = ClientSocket.recv(payload-len(data))
+
+                if new_message:
+
+                    if msg[:1].hex()!='a5' or msg[1:2].hex()!='5a':
+                       print("Check message start")
+                       continue
+                    payload = struct.unpack('l',msg[2:10])[0] + 18
+                    data.extend(msg)
+                    new_message= False
+                    continue
+
+                data.extend(msg)
+
+                if len(data)>=payload:
+                    print("Full message")
+                    break
+            except socket.error as e:
+                print(str(e))
+                #print("Connection lost with " + str(s[0]))
 
         while True:
             try:
@@ -104,13 +128,13 @@ def handle_client(s,q):
             except socket.error as e:
                 print(str(e))
                 print("Connection lost with " + str(s[0]))
+
                 connected=False
                 new_message = True
                 ClientSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 while not connected:
                     try:
-                        ClientSocket.connect(s)
-                        #ClientSocket.setblocking(0)
+                        ClientSocket.setblocking(0)
                         connected=True
                         print("Reconnected to " + str(s[0]))
                     except socket.error:
@@ -134,6 +158,7 @@ def run_detections(frame_q,det_q):
     producer = KafkaProducer(bootstrap_servers=[str(os.environ['IP_KAFKA']) + ':' + str(os.environ['PORT_KAFKA'])],
                              value_serializer=lambda x:
                             json.dumps(x).encode('utf-8'))
+
     sender_id = str(uuid.uuid4())
 
     start_time = time.time()
@@ -220,7 +245,6 @@ def run_detections(frame_q,det_q):
                         counter_uniq_object_id +=1
                         unique_dets.append(det)
 
-
             #uni_time = time.time() - start_inf_time - end_inf_time - z_time - victim_time
             #print("Finding uniques time: " + str(uni_time))
             frame_cnt += 1
@@ -231,6 +255,7 @@ def run_detections(frame_q,det_q):
             
             det_q.put([frame.image,frame.depth,frame.CameraId])
             print("Detection pushed to queue")
+
 
         if (time.time() - start_time) > 9:
             #print("10 seconds passed")
@@ -253,9 +278,7 @@ def run_detections(frame_q,det_q):
             start_time = time.time()
 
 
-
 def main():
-
 
     # Initialize queues and processes
     display = True
@@ -269,7 +292,8 @@ def main():
     if display:
         display_process=mp.Process(target=display_frame, args=(det_q,))
         display_process.start()
-
+    
+    # Initialize TCP server
 
     socks = []
     procs = []
@@ -282,7 +306,12 @@ def main():
     for i in range(len(socks)):
         procs.append(mp.Process(target=handle_client, args=(socks[i], frame_q)))
         procs[i].start()
-
+        
+    for p in procs:
+        p.join()
+    detector_process.join()
+    display_process.join()
+    cv2.destroyAllWindows()
 
 if __name__=="__main__":
 
