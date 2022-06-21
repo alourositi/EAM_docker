@@ -1,18 +1,32 @@
 import cv2
+import numpy as np
+from scipy.spatial.transform import Rotation as R
 
-def get_3D_coordinates(u, v, d):
+def get_3D_coordinates(u, v, d, intrin, pos, quat):
     
-    Fx, Fy, Cx, Cy = 384.6941223144531, 384.6941223144531, 322.5314025878906, 241.5406494140625,
+    fx = 384.6941223144531
+    fy = 384.6941223144531
+    cx = 322.5314025878906
+    cy = 241.5406494140625
     
-    X = d / Fx * (u - Cx)
-    Y = d / Fy * (v - Cy)
+    X = d / 344.455 * (u - 344.455)
+    Y = d / 344.455 * (v - 344.455)
     Z = d
+
+    #vec = np.array([X,Y,Z])
+    #r = R.from_euler('zyx', [0, 0, -90], degrees=True).as_matrix()
+    #vec = np.dot(r,vec)
+#
+    #r_q = R.from_quat(quat)
+    #vec = np.dot(r_q,vec)
+#
+    #vec = vec + np.array(pos)
 
     return [X, Y, Z]
     
 class Object:
     
-    def __init__(self, type, score, bbox, id, depth):
+    def __init__(self, type, score, bbox, id, depth, intrin, pos, quat):
         self.obj_type = type
         self.score = score
         self.bbox = bbox
@@ -20,8 +34,8 @@ class Object:
         self.width = self.bbox[2]- self.bbox[0]
         self.height = self.bbox[3]- self.bbox[1]
 
-        self.min=get_3D_coordinates(self.bbox[0], self.bbox[1], depth)
-        self.max=get_3D_coordinates(self.bbox[2], self.bbox[3], depth)
+        self.min=get_3D_coordinates(self.bbox[0], self.bbox[1], depth, intrin, pos, quat)
+        self.max=get_3D_coordinates(self.bbox[2], self.bbox[3], depth, intrin, pos, quat)
         
 
     def __repr__(self):
@@ -41,8 +55,8 @@ class Object:
         
 class Person(Object):
 
-    def __init__(self, type, score, bbox, id, depth):
-        super().__init__(type, score, bbox, id, depth)
+    def __init__(self, type, score, bbox, id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, id, depth, intrin, pos, quat)
         if (self.width > 1.5*self.height):
             self.is_victim = True
             self.obj_type = "Victim"
@@ -57,14 +71,14 @@ class Person(Object):
 
             
 class Vehicle(Object):
-    def __init__(self, type, category, score, bbox, id, depth):
-        super().__init__(type, score, bbox, id, depth)
+    def __init__(self, type, category, score, bbox, id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, id, depth, intrin, pos, quat)
         self.category = category
 	
 	
 class Drone(Object):
-    def __init__(self, type, score, bbox, det_id, depth):
-        super().__init__(type, score, bbox, det_id, depth)
+    def __init__(self, type, score, bbox, det_id, depth, intrin, pos, quat):
+        super().__init__(type, score, bbox, det_id, depth, intrin, pos, quat)
         if (self.max[2] > 1.5):
             self.airborne = True
         else:

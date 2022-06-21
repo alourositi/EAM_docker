@@ -2,7 +2,11 @@ import math
 import pyrealsense2 as rs
 import cv2
 import numpy as np
+import uuid
+import time
 
+
+from json import dumps
 from kafka import KafkaProducer
 from statistics import median, mean
 
@@ -52,10 +56,24 @@ def get_depth_of_center(x, y, width, height, frame):
     else:
         return depths[0]
 
-def generates_msg(data, producer): 
+def generates_msg(data, producer, sender_id): 
     
-    header=[('content-encoding', b'base64'), ('type', b'detected object')]
-    topic= "Object_Detection"
+    topic= "Detections"
+
+    head ={
+        "sender_id" : sender_id,
+        "sender_type" : 'EAM',
+        "msg_id" : str(uuid.uuid4()),
+        "timestamp" : int(time.time()),
+        "msg_type" : 'notification',
+        "msg_content" : 'detections'
+
+    }
+
+    header = []
+    for field in head:
+        header.append((field,dumps(head[field]).encode('utf-8')))
+
     msg = []
     for det in data:
         msg_det ={

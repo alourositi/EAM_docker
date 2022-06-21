@@ -11,6 +11,7 @@ import multiprocessing as mp
 import uuid
 from dotenv import load_dotenv
 
+
 from utils.eucl_tracker import EuclideanDistTracker
 from modules.detector.predictor import COCODemo
 from kafka import KafkaProducer
@@ -38,13 +39,10 @@ def display_frame(det_q):
             frame=det_q.get()
 
             image=frame[0]
-            depth=frame[1]
-            CameraId= str(frame[2].hex())
-            # Display RGB and Depth frame (for test purposes)
-            colormap_image=cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.05), cv2.COLORMAP_BONE)
-            images=np.hstack((image,colormap_image))
-            cv2.namedWindow('RGB + Depth '+CameraId,cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RGB + Depth '+CameraId,images)
+            CameraId= str(frame[1].hex())
+            # Display RGB frame (for test purposes)
+            cv2.namedWindow('RGB '+CameraId,cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RGB '+CameraId,image)
             key= cv2.waitKey(1)
             if key & 0xFF == ord('q') or key==27:
                 cv2.destroyAllWindows()
@@ -184,8 +182,6 @@ def run_detections(frame_q,det_q):
                     #    detections.append(obj)
 
                     # Create Detection object
-                    #obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
-                    
 
                     if result_labels[x]=="person":
                         obj = Person(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
@@ -224,6 +220,7 @@ def run_detections(frame_q,det_q):
                         counter_uniq_object_id +=1
                         unique_dets.append(det)
 
+
             #uni_time = time.time() - start_inf_time - end_inf_time - z_time - victim_time
             #print("Finding uniques time: " + str(uni_time))
             frame_cnt += 1
@@ -259,7 +256,6 @@ def run_detections(frame_q,det_q):
 
 def main():
 
-    #load_dotenv()
 
     # Initialize queues and processes
     display = True
@@ -273,8 +269,7 @@ def main():
     if display:
         display_process=mp.Process(target=display_frame, args=(det_q,))
         display_process.start()
-    
-    # Initialize TCP server
+
 
     socks = []
     procs = []
@@ -288,12 +283,6 @@ def main():
         procs.append(mp.Process(target=handle_client, args=(socks[i], frame_q)))
         procs[i].start()
 
-    for p in procs:
-        p.join()
-    detector_process.join()
-    if display:
-        display_process.join()
-    cv2.destroyAllWindows()
 
 if __name__=="__main__":
 
