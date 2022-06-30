@@ -82,8 +82,8 @@ def handle_client(s,q):
 
         while True:
             try:
-                print(payload)
-                print(len(data))
+#                print(payload)
+#                print(len(data))
                 msg = ClientSocket.recv(payload-len(data))
                 if len(msg) == 0:
                     raise socket.error
@@ -156,7 +156,7 @@ def run_detections(frame_q,det_q):
             result, result_labels, result_scores, result_bboxes = detector.run_on_opencv_image(frame.image, our_list)
             end_inf_time = time.time() - start_inf_time
 
-            print("Inf time : " + str(end_inf_time))
+#            print("Inf time : " + str(end_inf_time))
 
             detections = []
             if result_labels!=[]:
@@ -170,7 +170,7 @@ def run_detections(frame_q,det_q):
                     z = get_depth_of_center(xc,yc,object_width, object_height, frame.depth)
 
                     z_time = time.time() - start_inf_time - end_inf_time
-                    print("Z time: " + str(z_time))
+ #                   print("Z time: " + str(z_time))
                     #z = 0.3
                     if z==0: # do not calculate object to close on camera
                         continue
@@ -195,7 +195,7 @@ def run_detections(frame_q,det_q):
                         obj = Object(result_labels[x],result_scores[x],result_bboxes[x],x,z,[frame.fx,frame.fy,frame.cx,frame.cy],[frame.px,frame.py,frame.pz], [frame.qx,frame.qy,frame.qz, frame.qw])
 
                     victim_time = time.time() - start_inf_time - end_inf_time - z_time
-                    print("victim time: " + str(victim_time))
+  #                  print("victim time: " + str(victim_time))
                     detections.append(obj) 
 
 

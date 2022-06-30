@@ -7,7 +7,7 @@
 
 #ARG CUDA="10.2"
 #ARG CUDNN="7"
-ARG CUDA="11.0"
+ARG CUDA="11.2.0"
 ARG CUDNN="8"
 ARG distro="18.04"
 
