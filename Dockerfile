@@ -5,8 +5,10 @@
 # sudo docker build -t docker_eam .
 # sudo docker run -it --rm --gpus all --net=host --privileged --volume=/dev:/dev docker_eam
 
-ARG CUDA="10.2"
-ARG CUDNN="7"
+#ARG CUDA="10.2"
+#ARG CUDNN="7"
+ARG CUDA="11.0"
+ARG CUDNN="8"
 ARG distro="18.04"
 
 FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-devel-ubuntu${distro}
@@ -52,6 +54,7 @@ WORKDIR EAM_docker
 #COPY requirements.txt .
 RUN . /opt/venv/bin/activate
 RUN pip3 install --upgrade pip
+RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install -r requirements.txt
 
 # copy aplication
